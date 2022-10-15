@@ -29,36 +29,39 @@ struct DEV_LockMechanism : Service::LockMechanism {     // A standalone Reed Sen
     target=new Characteristic::LockTargetState(0);   
     
     this->lockPin=lockPin;                  // save the pin number for the hypothetical relay
-    pinMode(lockPin, OUTPUT);             // configure the pin as an input using the standard Arduino pinMode function
+    pinMode(lockPin, OUTPUT);               // configure the pin as an input using the standard Arduino pinMode function
     this->warnPin=warnPin;                  // save the pin number for the warning led
         
 
     
-    Serial.print("Configuring lockPin: Pin=");               // initialization message of the Pin Setup
+    Serial.print("Configuring lockPin: Pin=");       // initialization message of the Pin Setup
     Serial.print(lockPin);
     Serial.print("\n");
+    digitalWrite(lockPin,HIGH);                      // turn pin off for relay. Although for security reasons it might be better to turn on at initialization.
+
 
   } // end constructor
 
 
   boolean update(){                              // update() method
 
-    // see HAP Documentation for details on what each value represents
+    /*
     LOG1("*** The requested Target is ");
     LOG1(target->getNewVal());
     LOG1("\n");
     LOG1("*** The current state is ");
     LOG1(current->getVal());
     LOG1("\n");
+    */
 
     if(target->getNewVal()==0){                     // if the target-state value is set to 0, HomeKit is requesting the lock to be in open position
       LOG1("Opening Lock\n");
       current->setVal(1);                           // set the current-state value to 1, which means "open"
-      digitalWrite(lockPin,LOW);                    // turn pin off
+      digitalWrite(lockPin,HIGH);                    // turn pin off
     } else {
       LOG1("Closing Lock\n");                       // else the target-state value is set to 0, and HomeKit is requesting the lock to be in the closed position
       current->setVal(0);                           // set the current-state value to 0, which means "closed" 
-      digitalWrite(lockPin,HIGH);                   // turn pin on     
+      digitalWrite(lockPin,LOW);                   // turn pin on     
     }
     
     return(true);                               // return true

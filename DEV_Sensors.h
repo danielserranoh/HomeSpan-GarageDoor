@@ -48,13 +48,14 @@ struct DEV_ContactSensor : Service::ContactSensor {     // A standalone Reed Sen
       // Has the state changed? If change, then setVal, otherwise do nothing
       if(state->getVal()!=newState){
         state->setVal(newState);                            // set the new ContactSensorState in HomeKit; this generates an Event Notification and also resets the elapsed time
-      
+        /*
        // LOG1(name); // How do I retrive the name of the sensor?
         LOG1("Sensor at Pin: ");
         LOG1(sensorPin);
         LOG1(" Update to: ");
         LOG1(newState);
-        LOG1("\n");       
+        LOG1("\n"); 
+        */      
       }     
     }
     

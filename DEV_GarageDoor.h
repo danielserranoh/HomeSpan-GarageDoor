@@ -33,6 +33,8 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
   int photoSensorState;
   int reedSensorState;
 
+  int OPERATIONTIME = 200000;             // Time for a full door cycle (opening or closing))
+
   SpanCharacteristic *current;            // reference to the Current Door State Characteristic (specific to Garage Door Openers)
   SpanCharacteristic *target;             // reference to the Target Door State Characteristic (specific to Garage Door Openers)  
   SpanCharacteristic *obstruction;        // reference to the Obstruction Detected Characteristic (specific to Garage Door Openers)
@@ -57,20 +59,21 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
     
     // INITIALIZATION PROCEDURE //
     // Visually check that the Leds are working and config is OK
-    LOG0("- Configuring activationPin at PIN ");
-    LOG0(activationPin);
-    LOG0("\n");
-    digitalWrite(activationPin,LOW);                   // turn pin off for relay
     
-    LOG0("- Configuring warnPin at PIN ");
-    LOG0(warnPin);
-    LOG0("\n");
+    //LOG0("- Configuring activationPin at PIN ");
+    //LOG0(activationPin);
+    //LOG0("\n");
+    digitalWrite(activationPin,HIGH);                   // turn pin off for relay
+    
+    //LOG0("- Configuring warnPin at PIN ");
+    //LOG0(warnPin);
+    //LOG0("\n");
     digitalWrite(warnPin,HIGH);                   // turn pin for warnLed on
     
     // turn off after check
     delay(250);                                     // wait 250 ms
-    digitalWrite(activationPin,LOW);                // turn pin off
     digitalWrite(warnPin,LOW);                      // turn pin off
+    
     Serial.print("Garage Door ready \n");           // initialization message of the Service
   } // end constructor
 
@@ -155,9 +158,9 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
     // This last bit of code only gets called if the door is in a state that represents activationly opening or activationly closing.
     // If there is an obstruction, the door is "stopped" and won't start again until the HomeKit Controller requests a new open or close action
 
-    if(current->getVal()!=target->getVal() && target->timeVal()>5000){ // simulate a garage door that takes 5 seconds to operate by monitoring time since target-state was last modified
-      // habría que confirmar que el Sensor Portón confirma el cierre de la puerta. 
-      // Si el tiempo desde la activación hasta recibir la señal de cierre excede X sg, avidar que puerta bloqueada o parada (o stopped) 
+    if(current->getVal()!=target->getVal() && target->timeVal()>OPERATIONTIME){ // simulate a garage door that takes 15 seconds to operate by monitoring time since target-state was last modified
+      // Además de establecer un tiempo de cierre por seguridad, habría que leer el Sensor Portón para confirmar el cierre de la puerta. 
+      // Si el tiempo desde la activación hasta recibir la señal de cierre excede X sg, avisar que puerta bloqueada o parada (o stopped) 
       LOG1("Door Inactive \n");
       current->setVal(target->getVal());           // set the current-state to the target-state
       if (target->getVal()==0){

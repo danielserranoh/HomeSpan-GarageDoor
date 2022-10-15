@@ -50,7 +50,7 @@ void setup() {
 
    homeSpan.setControlPin(controlPin);
    homeSpan.setStatusPin(statusPin);
-   homeSpan.setStatusAutoOff(5);      //turns off status pin after 5 secs of power up, will remain active for control signals
+   homeSpan.setStatusAutoOff(1);      //turns off status pin after 1 secs of power up, will remain active for control signals
    homeSpan.setHostNameSuffix("");
    homeSpan.enableOTA();   // Enables de OTA updating service
 
