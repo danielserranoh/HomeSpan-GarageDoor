@@ -31,7 +31,11 @@
 #include "DEV_Sensors.h"
 #include "DEV_LockMechanism.h"
 
+// For manually setting up HomeSpan config
 int statusPin = 19;    
+int controlPin = 27;
+
+// Controlers I/O
 int activateDoorPin = 17;
 int photoSensorPin = 13;
 int reedSensorPin = 23;
@@ -44,7 +48,7 @@ int lockPin = 22;
 
 void setup() {
 
-   //homeSpan.setControlPin(controlPin)
+   homeSpan.setControlPin(controlPin);
    homeSpan.setStatusPin(statusPin);
    homeSpan.setStatusAutoOff(5);      //turns off status pin after 5 secs of power up, will remain active for control signals
    homeSpan.setHostNameSuffix("");
@@ -63,7 +67,7 @@ void setup() {
      Serial.print("Configuring Garage Door Service \n");           // initialization message of the Service
      new SpanAccessory();       //new Service::GarageDoorOpener();
       new DEV_Identify("Puerta Garaje","BFT","BT-A-400","Demos Merkal","0.9",0); // This calls the function in the DEV_Identify.h file that allows the Accessory identification in HomeKit
-      new DEV_GarageDoor(activateDoorPin, warnPin);        
+      new DEV_GarageDoor(activateDoorPin, photoSensorPin, reedSensorPin, warnPin);        
 
     Serial.print("Configuring Contact Sensor \n");           // initialization message of the Service
     new SpanAccessory();        //  new Service::ContactSensor();
@@ -72,7 +76,7 @@ void setup() {
 
     Serial.print("Configuring Contact Sensor \n");           // initialization message of the Service
     new SpanAccessory();        //  new Service::ContactSensor();
-     new DEV_Identify("Cierre Portón","SakuraHouse","123-ABC","Reed Sensor","0.2",0);
+     new DEV_Identify("Cierre Portón","SakuraHouse","123-ABC","Hall Sensor","0.2",0);
      new DEV_ContactSensor(closedSensorPin);    
     
     Serial.print("Configuring Contact Sensor \n");           // initialization message of the Service  

@@ -30,7 +30,7 @@ struct DEV_LockMechanism : Service::LockMechanism {     // A standalone Reed Sen
     
     this->lockPin=lockPin;                  // save the pin number for the hypothetical relay
     pinMode(lockPin, OUTPUT);             // configure the pin as an input using the standard Arduino pinMode function
-    this->warnPin=warnPin;                  // save the pin number for the hypothetical relay
+    this->warnPin=warnPin;                  // save the pin number for the warning led
         
 
     
