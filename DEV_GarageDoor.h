@@ -79,16 +79,10 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
 
   boolean update(){                              // update() method
 
-    // see HAP Documentation for details on what each value represents
-    LOG1("*** The requested Target is ");
-    LOG1(target->getNewVal());
-    LOG1("\n");
-    LOG1("*** The current position is ");
-    LOG1(current->getVal());
-    LOG1("\n");
+    LOG1("*** Action requested  by changing Target");
 
     if(target->getNewVal()==OPEN){                  // if the target-state value is set to 0, HomeKit is requesting the door to be in open position
-      // But if the door was already closing and we get a new signal, door must stopped, not closed (logic of the Deimos board)
+      // But if the door was already opening and we get a new signal, door must be stopped, not closed (to follow the logic of the Deimos board)
       if(current->getVal()==CLOSING){
         LOG1("Garage Door was closing and requested opening. Stop first\n");
         current->setVal(STOPPED);                   // Set currentState to Stopped
@@ -98,7 +92,7 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
       current->setVal(OPENING);                     // set the current-state value to 2, which means "opening"      
       obstruction->setVal(false);                   // clear any prior obstruction detection
     } else {
-      if(obstruction->getVal()==true){              // Here we have to test if there is an obstruction. If there is, return to exit loop, otherwise keep closing
+      if(obstruction->getVal()==true){              // Testing if there is an obstruction. If there is, return to exit the loop, otherwise keep closing
       LOG1("Garage Door obstruction. Can't close\n");
       // ¿Shall I change target to 0 to open the door?
         return(false);
@@ -116,14 +110,12 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
       LOG1("\n");
       digitalWrite(warnPin,LOW);                   // turn pin off          
     }
-    LOG1("Turn on the LED on pin=");                // TRIGGER DE APERTURA / CIERRE
-    LOG1(activationPin);
-    LOG1("\n");
+    LOG1("Trigger the relay on pin=");             // TRIGGER TO ACTIVATE THE DOOR
     digitalWrite(activationPin,LOW);               // turn pin off
-    delay(250);                                     // wait 250 ms
-    digitalWrite(activationPin,HIGH);                // turn pin on
+    delay(250);                                    // wait 250 ms
+    digitalWrite(activationPin,HIGH);              // turn pin on
     LOG1("Door Activated \n");
-    return(true);                                   // return true
+    return(true);                                  // return true
   
   } // update
 
@@ -136,18 +128,13 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
         reedSensorState = digitalRead(reedSensorPin);
         // Read The Photovoltaic Sensor
         photoSensorState = digitalRead(photoSensorPin);
+        if(photoSensorState == 0 || reedSensorState == 1){
+          obstruction->setVal(true);                   // set obstruction-detected to true
+        } else {
+          obstruction->setVal(false);                   // set obstruction-detected to true
+        }
      }
     
-    if(photoSensorState == 0 || reedSensorState == 1){
-      //LOG1("Hay obstruccion \n");
-      //LOG1("PhotosensorState ");
-      //LOG1(photoSensorState); 
-      //LOG1("\n");
-      obstruction->setVal(true);                   // set obstruction-detected to true
-    } else {
-      obstruction->setVal(false);                   // set obstruction-detected to true
-    }
-
     if(current->getVal()==target->getVal()){
       return;                                       // if current-state matches target-state there is nothing do -- exit loop()
     }        
