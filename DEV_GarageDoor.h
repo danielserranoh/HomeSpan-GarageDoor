@@ -108,12 +108,9 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
       LOG1("Closing Garage Door\n");                // else the target-state value is set to 1, and HomeKit is requesting the door to be in the closed position
       current->setVal(CLOSING);                     // set the current-state value to 3, which means "closing" 
       obstruction->setVal(false);                   // clear any prior obstruction detection                            
-      LOG1("Turn off the LED on pin=");
-      LOG1(warnPin);
-      LOG1("\n");
-      digitalWrite(warnPin,LOW);                   // turn pin off          
+             
     }
-    LOG1("Trigger the relay on pin=");             // TRIGGER TO ACTIVATE THE DOOR
+    LOG1("Trigger the relay");             // TRIGGER TO ACTIVATE THE DOOR
     digitalWrite(activationPin,LOW);               // turn pin off
     delay(250);                                    // wait 250 ms
     digitalWrite(activationPin,HIGH);              // turn pin on
@@ -127,14 +124,17 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
 
   void loop(){                                     // loop() method
      if(obstruction->timeVal()>500){     // check time elapsed since last update and proceed only if greater than 0,5 seconds
-        // Read the Reed Sensor (Walking Door)
+        // Read the Reed Sensor (Walking Door) // The logic of this sensor is reversed!!!
         reedSensorState = digitalRead(reedSensorPin);
         // Read The Photovoltaic Sensor
         photoSensorState = digitalRead(photoSensorPin);
-        if(photoSensorState == 0 || reedSensorState == 1){
+        // if(photoSensorState == 0 || reedSensorState == 1){
+        if(photoSensorState == 0){
           obstruction->setVal(true);                   // set obstruction-detected to true
         } else {
-          obstruction->setVal(false);                   // set obstruction-detected to true
+          obstruction->setVal(false);                   // set obstruction-detected to false
+          LOG1("Turn off the WARNING LED");
+          digitalWrite(warnPin,LOW);                   // turn pin off   
         }
      }
     
@@ -165,8 +165,10 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
       current->setVal(target->getVal());           // set the current-state to the target-state
       if (target->getVal()==0){
         LOG1("Puerta Abierta \n");
+        obstruction->setVal(false);
       } else {
         LOG1("Puerta Cerrada \n");
+        obstruction->setVal(false);
       }
     }
   } // loop

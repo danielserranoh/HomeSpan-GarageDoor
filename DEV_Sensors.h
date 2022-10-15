@@ -19,9 +19,10 @@ struct DEV_ContactSensor : Service::ContactSensor {     // A standalone Reed Sen
        
     //this->name=name; 
     this->sensorPin=sensorPin;                  // save the pin number for the hypothetical relay
-    pinMode(sensorPin,INPUT_PULLUP);            // configure the pin as an input using the standard Arduino pinMode function - Set To Pull up to avoid signal floating
+    pinMode(sensorPin,INPUT);            // configure the pin as an input using the standard Arduino pinMode function - Set To Pull up to avoid signal floating
         
     newState = digitalRead(sensorPin);                     // read the board pin defined previously
+    newState? newState=0:newState=1;                       // inverse logic as we do not hace pull-down input
     state->setVal(newState);                               // set the real ContactSensorState in HomeKit
 
     
@@ -45,6 +46,7 @@ struct DEV_ContactSensor : Service::ContactSensor {     // A standalone Reed Sen
 
     if(state->timeVal()>1000){                               // check time elapsed since last update and proceed only if greater than 1 seconds
       newState = digitalRead(sensorPin);                     // read the board pin defined previously
+      newState? newState=0:newState=1;                       // inverse logic as we do not hace pull-down input
       // Has the state changed? If change, then setVal, otherwise do nothing
       if(state->getVal()!=newState){
         state->setVal(newState);                            // set the new ContactSensorState in HomeKit; this generates an Event Notification and also resets the elapsed time

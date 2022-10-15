@@ -13,4 +13,7 @@ The repository has three branches:
 
 
 Roadmap:
-- Make the  
+SW- Memorise states
+HW volagege adjuster for input signals 
+  - ReedSensor Vcc=5V
+  - Photosensor Vcc = 6,8V

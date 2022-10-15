@@ -73,7 +73,7 @@ void setup() {
     new SpanAccessory();        //  new Service::ContactSensor();
      new DEV_Identify("Fotovoltaico Portón","BFT","123-ABC","Photovoltaic Sensor","1.0",0);
      new DEV_ContactSensor(photoSensorPin);      
-
+    
     Serial.print("Configuring Contact Sensor \n");           // initialization message of the Service
     new SpanAccessory();        //  new Service::ContactSensor();
      new DEV_Identify("Cierre Portón","SakuraHouse","123-ABC","Hall Sensor","0.2",0);
