@@ -61,7 +61,7 @@ void setup() {
 
     Serial.print("Configuring The Bridge \n");                               
     new SpanAccessory();
-     new DEV_Identify("Portero","SakuraHouse","20141114","SakuraBridge by HomeSpan","1.6.0",0); // This calls the function in the DEV_Identify.h file that allows the Accessory identification in HomeKit
+     new DEV_Identify("Portero","SakuraHouse","20201019","SakuraBridge by HomeSpan","1.6.0",0); // This calls the function in the DEV_Identify.h file that allows the Accessory identification in HomeKit
      // *NOTE* This is the inizialization of the Bridge         
 
      Serial.print("Configuring Garage Door Service \n");           // initialization message of the Service
@@ -72,7 +72,7 @@ void setup() {
     Serial.print("Configuring Contact Sensor \n");           // initialization message of the Service
     new SpanAccessory();        //  new Service::ContactSensor();
      new DEV_Identify("Fotovoltaico Portón","BFT","123-ABC","Photovoltaic Sensor","1.0",0);
-     new DEV_ContactSensor(photoSensorPin);      
+     new DEV_ContactSensor(photoSensorPin, 1);      
     
     Serial.print("Configuring Contact Sensor \n");           // initialization message of the Service
     new SpanAccessory();        //  new Service::ContactSensor();

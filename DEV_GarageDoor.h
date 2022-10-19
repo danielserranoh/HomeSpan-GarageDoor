@@ -17,6 +17,20 @@
     // 0 = Open
     // 1 = Close
 
+    // Casuisticas: 
+    // [0 0 0 0] Puerta abierta Sensor Reed Abierto => STOP               -> [0 1 0 0] Señal cambio a cerrar => [0 0 0 0] No hacer nada. Volver a hacer que el target sea 0
+    // [0 0 1 0] Puerta abierta Sensor Reed cerrado => REPOSO ABIERTO     -> [0 1 1 0] Señal cambio a cerrar => [3 1 1 0] Orden cerrar 
+    // [1 1 0 -] Puerta cerrada. Sensor Puerta Abierto => STOP            -> [1 0 0 0] Señal cambio a abrir  => [1 1 0 -] No hacer nada. Volver a hacer que el target sea 1
+    // [1 1 1 -] Puerta cerrada. Sensor Puerta cerrado => REPOSO CERRADO  -> [1 0 1 -] Señal cambio a abrir  => Abriendo pasar Estado portón a [2 0 1 -]
+    // [1 1 1 1] Puerta cerrada. Sensor Foto Cerrado => REPOSO CERRADO    -> [1 0 1 1] Señal cambio a abrir  => Se puede abrir, aunque parece peligroso.
+    // [2 0 1 -] Puerta abriendose. Sensor Puerta cerrado => ABRIENDO.    -> [2 0 0 -] Sensor puerta se abre => STOP (When cleared - Esperar un nuevo comando que debería seguir cerrando la puerta)
+    // [2 0 1 1] Puerta abriendose. Sensor Foto Cerrado => Continua abriendose. -> [2 1 1 1] Si señal cambio (cerrar) => STOP (ya que es caso de ...)
+    
+
+    // En definitiva. Estando en STOP no hay que hacer caso a la señal de trigger, y hay que dejarla como estaba. (pensar con la lógica de la puerta)
+
+    // Idea: Se pueden hacer dos funciones: funcion mandarPulso y funcion mandarDoblePulso.
+
 struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
 
   int OPEN = 0;
@@ -33,7 +47,7 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
   int photoSensorState;
   int reedSensorState;
 
-  int OPERATIONTIME = 200000;             // Time for a full door cycle (opening or closing))
+  int OPERATIONTIME = 20000;             // Time for a full door cycle (opening or closing) in ms
 
   SpanCharacteristic *current;            // reference to the Current Door State Characteristic (specific to Garage Door Openers)
   SpanCharacteristic *target;             // reference to the Target Door State Characteristic (specific to Garage Door Openers)  
@@ -82,8 +96,9 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
 
   boolean update(){                              // update() method
 
-    LOG1("*** Action requested  by changing Target");
-
+    LOG1("*** Action requested by changing Target: ");
+    // Si la puerta está obstruida, y recibe una orden, debería de obviarse la orden.
+    
     if(target->getNewVal()==OPEN){                  // if the target-state value is set to 0, HomeKit is requesting the door to be in open position
       // But if the door was already opening and we get a new signal, door must be stopped, not closed (to follow the logic of the Deimos board)
       if(current->getVal()==CLOSING){
@@ -94,10 +109,12 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
       LOG1("Opening Garage Door\n");                
       current->setVal(OPENING);                     // set the current-state value to 2, which means "opening"      
       obstruction->setVal(false);                   // clear any prior obstruction detection
-    } else {
+
+    } else {      // TARGET = CLOSE
+
       if(obstruction->getVal()==true){              // Testing if there is an obstruction. If there is, return to exit the loop, otherwise keep closing
-      LOG1("Garage Door obstruction. Can't close\n");
-      // ¿Shall I change target to 0 to open the door?
+        LOG1("Garage Door obstruction. Can't close\n");
+        target->setVal(OPEN);
         return(false);
       }
       if(current->getVal()==OPENING){
@@ -110,11 +127,14 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
       obstruction->setVal(false);                   // clear any prior obstruction detection                            
              
     }
+    /*
     LOG1("Trigger the relay");             // TRIGGER TO ACTIVATE THE DOOR
     digitalWrite(activationPin,LOW);               // turn pin off
     delay(250);                                    // wait 250 ms
     digitalWrite(activationPin,HIGH);              // turn pin on
     LOG1("Door Activated \n");
+    */
+    triggerDoor(activationPin);
     return(true);                                  // return true
   
   } // update
@@ -122,19 +142,22 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
 
 
 
-  void loop(){                                     // loop() method
-     if(obstruction->timeVal()>500){     // check time elapsed since last update and proceed only if greater than 0,5 seconds
-        // Read the Reed Sensor (Walking Door) // The logic of this sensor is reversed!!!
+  void loop(){                                      // loop() method
+     if(obstruction->timeVal()>1000){               // check time elapsed since last update and proceed only if greater than 0,5 seconds
+        // LOG1("Read sensor states \n");
+        // Read the Reed Sensor (Walking Door)      // The logic of this sensor is reversed!!!
         reedSensorState = digitalRead(reedSensorPin);
         // Read The Photovoltaic Sensor
         photoSensorState = digitalRead(photoSensorPin);
-        // if(photoSensorState == 0 || reedSensorState == 1){
-        if(photoSensorState == 0){
+
+        if(photoSensorState == 1 || reedSensorState == 0){
           obstruction->setVal(true);                   // set obstruction-detected to true
+          // LOG1("Turn on the WARNING LED \n");
+          // digitalWrite(warnPin,HIGH);                   // turn pin on   
         } else {
-          obstruction->setVal(false);                   // set obstruction-detected to false
-          LOG1("Turn off the WARNING LED");
-          digitalWrite(warnPin,LOW);                   // turn pin off   
+          obstruction->setVal(false);                  // set obstruction-detected to false
+          // LOG1("Turn off the WARNING LED \n");
+          // digitalWrite(warnPin,LOW);                   // turn pin off   
         }
      }
     
@@ -158,9 +181,10 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
     // This last bit of code only gets called if the door is in a state that represents activationly opening or activationly closing.
     // If there is an obstruction, the door is "stopped" and won't start again until the HomeKit Controller requests a new open or close action
 
-    if(current->getVal()!=target->getVal() && target->timeVal()>OPERATIONTIME){ // simulate a garage door that takes 15 seconds to operate by monitoring time since target-state was last modified
+    if(current->getVal()!=target->getVal() && target->timeVal()>OPERATIONTIME){ 
       // Además de establecer un tiempo de cierre por seguridad, habría que leer el Sensor Portón para confirmar el cierre de la puerta. 
       // Si el tiempo desde la activación hasta recibir la señal de cierre excede X sg, avisar que puerta bloqueada o parada (o stopped) 
+      // TEST: meter aqui el test del principio del loop, pues en principio solo saltará Obstruction, si hay orden de movimiento de la puerta.
       LOG1("Door Inactive \n");
       current->setVal(target->getVal());           // set the current-state to the target-state
       if (target->getVal()==0){
@@ -172,6 +196,15 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
       }
     }
   } // loop
+
+  void triggerDoor(int triggerPin){
+    //this->activationPin=activationPin;
+    LOG1("Trigger the relay: ");             // TRIGGER TO ACTIVATE THE DOOR
+    digitalWrite(triggerPin,LOW);               // turn pin off
+    delay(250);                                 // wait 250 ms
+    digitalWrite(triggerPin,HIGH);              // turn pin on
+    LOG1("Door Activated \n");
+  }
   
 };
 
