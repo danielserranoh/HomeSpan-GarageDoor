@@ -42,11 +42,14 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
   int STOPPED = 4;
 
   int activationPin;
-  int warnPin;
+
   int photoSensorPin;
+  int hallSensorPin;
   int reedSensorPin;
+  int warnPin;
 
   int photoSensorState;
+  int hallSensorState;
   int reedSensorState;
 
   int OPERATIONTIME = 20000;             // Time for a full door cycle (opening or closing) in ms
@@ -60,7 +63,7 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
   //SpanCharacteristic *lockCurrent;        // reference to the Current Lock State Characteristic (optional to Garage Door Openers)
   //SpanCharacteristic *lockTarget;         // reference to the Target Lock State Characteristic (optional to Garage Door Openers)
 
-  DEV_GarageDoor(int activationPin, int photoSensorPin, int reedSensorPin,  int warnPin) : Service::GarageDoorOpener(){       // constructor() method
+  DEV_GarageDoor(int activationPin, int photoSensorPin, int hallSensorPin, int reedSensorPin,  int warnPin) : Service::GarageDoorOpener(){       // constructor() method
         
     current=new Characteristic::CurrentDoorState(1);              // initial value of 1 means closed
     target=new Characteristic::TargetDoorState(1);                // initial value of 1 means closed
@@ -71,6 +74,7 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
     this->warnPin=warnPin;
     pinMode(warnPin, OUTPUT);
     this->photoSensorPin=photoSensorPin;
+    this->photoSensorPin=hallSensorPin;
     this->reedSensorPin=reedSensorPin;
     
     // INITIALIZATION PROCEDURE //

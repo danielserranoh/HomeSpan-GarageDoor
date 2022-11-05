@@ -67,8 +67,8 @@ void setup() {
 
      Serial.print("Configuring Garage Door Service \n");           // initialization message of the Service
      new SpanAccessory();       //new Service::GarageDoorOpener();
-      new DEV_Identify("Puerta Garaje","BFT","BT-A-400","Demos Merkal","0.9",0); // This calls the function in the DEV_Identify.h file that allows the Accessory identification in HomeKit
-      new DEV_GarageDoor(activateDoorPin, photoSensorPin, reedSensorPin, warnPin);    
+      new DEV_Identify("Puerta Garaje","BFT","BT-A-400","Demos Merkal","2244.6.2",0); // This calls the function in the DEV_Identify.h file that allows the Accessory identification in HomeKit
+      new DEV_GarageDoor(activateDoorPin, photoSensorPin, hallSensorPin, reedSensorPin, warnPin);    
       //new SpanButton(intercomOpener);    
 
     Serial.print("Configuring Contact Sensor \n");           // initialization message of the Service
