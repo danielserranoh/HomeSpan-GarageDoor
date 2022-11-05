@@ -30,19 +30,20 @@
 #include "DEV_GarageDoor.h"     
 #include "DEV_Sensors.h"
 #include "DEV_LockMechanism.h"
+#include "DEV_ToggleSwitch.h"
 
 // For manually setting up HomeSpan config
 int statusPin = 19;    
-int controlPin = 27;
+int controlPin = 32;
 
 // Controlers I/O
-int activateDoorPin = 17;
-int photoSensorPin = 13;
+int activateDoorPin = 12;
+int photoSensorPin = 21;
 int reedSensorPin = 23;
-int closedSensorPin = 0;
+int hallSensorPin = 0;
 int warnPin = 33;    
-int lockPin = 22; 
-
+int lockPin = 14; 
+int intercomOpener = 27;
 
 
 
@@ -61,13 +62,14 @@ void setup() {
 
     Serial.print("Configuring The Bridge \n");                               
     new SpanAccessory();
-     new DEV_Identify("Portero","SakuraHouse","20201019","SakuraBridge by HomeSpan","1.6.0",0); // This calls the function in the DEV_Identify.h file that allows the Accessory identification in HomeKit
+     new DEV_Identify("Portero","SakuraHouse","20201019","SakuraBridge by HomeSpan","2244.6.1",0); // This calls the function in the DEV_Identify.h file that allows the Accessory identification in HomeKit
      // *NOTE* This is the inizialization of the Bridge         
 
      Serial.print("Configuring Garage Door Service \n");           // initialization message of the Service
      new SpanAccessory();       //new Service::GarageDoorOpener();
       new DEV_Identify("Puerta Garaje","BFT","BT-A-400","Demos Merkal","0.9",0); // This calls the function in the DEV_Identify.h file that allows the Accessory identification in HomeKit
-      new DEV_GarageDoor(activateDoorPin, photoSensorPin, reedSensorPin, warnPin);        
+      new DEV_GarageDoor(activateDoorPin, photoSensorPin, reedSensorPin, warnPin);    
+      //new SpanButton(intercomOpener);    
 
     Serial.print("Configuring Contact Sensor \n");           // initialization message of the Service
     new SpanAccessory();        //  new Service::ContactSensor();
@@ -77,18 +79,23 @@ void setup() {
     Serial.print("Configuring Contact Sensor \n");           // initialization message of the Service
     new SpanAccessory();        //  new Service::ContactSensor();
      new DEV_Identify("Cierre Portón","SakuraHouse","123-ABC","Hall Sensor","0.2",0);
-     new DEV_ContactSensor(closedSensorPin);    
+     new DEV_ContactSensor(hallSensorPin,0);    
     
     Serial.print("Configuring Contact Sensor \n");           // initialization message of the Service  
     new SpanAccessory();        //  new Service::ContactSensor();
      new DEV_Identify("Cierre Puerta","SakuraHouse","123-ABC","Reed Sensor","0.2",0);
-     new DEV_ContactSensor(reedSensorPin);                             
+     new DEV_ContactSensor(reedSensorPin,0);                             
 
      
     Serial.print("Configuring LockMechanism \n");           // initialization message of the Service
      new SpanAccessory();        //  new Service::LockMechanism();
      new DEV_Identify("Bloqueo Puerta Garaje","SakuraHouse","123-ABC","Lock","0.1",0);
      new DEV_LockMechanism(lockPin, warnPin);                             
+    
+    Serial.print("Configuring Door Toggle \n");           // initialization message of the Service
+     new SpanAccessory();        //  new Service::Switch();
+     new DEV_Identify("Portero Automatico","SakuraHouse","11871-DSH","Door Swwitch","0.1",0);
+     new DEV_ToggleSwitch(intercomOpener);     
                                        
      
 } // end of setup()

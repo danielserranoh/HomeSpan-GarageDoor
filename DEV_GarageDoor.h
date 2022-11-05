@@ -4,6 +4,7 @@
 //
 // Based ON: https://github.com/HomeSpan/HomeSpan/blob/master/examples/13-TargetStates/DEV_DoorsWindows.h
 // The above logic only manages the interactions with HomeKit, not with the ESP32 I/O System
+// Interesting inspiring Project: https://create.arduino.cc/projecthub/DVDMDN/automatic-sliding-door-for-the-garage-c7b1ba?ref=similar&ref_id=477071&offset=3
 // The limitPin is for dev purposes only. Should be removed for production
 
 // GarageDoor Current State options: 
@@ -30,6 +31,7 @@
     // En definitiva. Estando en STOP no hay que hacer caso a la señal de trigger, y hay que dejarla como estaba. (pensar con la lógica de la puerta)
 
     // Idea: Se pueden hacer dos funciones: funcion mandarPulso y funcion mandarDoblePulso.
+    // TEST: usar SpanButton() para añadir un pulsador para abrir la puerta peatonal. ¿También para abrir puerta peatonal Garaje?
 
 struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
 
@@ -98,13 +100,26 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
 
     LOG1("*** Action requested by changing Target: ");
     // Si la puerta está obstruida, y recibe una orden, debería de obviarse la orden.
-    
+    /*
+    LOG1(current->getVal());
+    LOG1(",");
+    LOG1(target->getNewVal());
+    LOG1("\n");
+    LOG1("Obstruction ");
+    LOG1(obstruction->getVal());
+    LOG1("\n");
+    */
+
     if(target->getNewVal()==OPEN){                  // if the target-state value is set to 0, HomeKit is requesting the door to be in open position
       // But if the door was already opening and we get a new signal, door must be stopped, not closed (to follow the logic of the Deimos board)
+      //With the addition of the Hall sensor, another logic can be built:
+      // HallSensor is CLOSED if and only if door OPEN or DOOR CLOSED
       if(current->getVal()==CLOSING){
         LOG1("Garage Door was closing and requested opening. Stop first\n");
         current->setVal(STOPPED);                   // Set currentState to Stopped
-        return(false);
+        // should trigger a STOP signal
+        triggerDoor(activationPin);
+        return(true); // ¿should be false?
       }
       LOG1("Opening Garage Door\n");                
       current->setVal(OPENING);                     // set the current-state value to 2, which means "opening"      
@@ -115,12 +130,12 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
       if(obstruction->getVal()==true){              // Testing if there is an obstruction. If there is, return to exit the loop, otherwise keep closing
         LOG1("Garage Door obstruction. Can't close\n");
         target->setVal(OPEN);
-        return(false);
+        return(true); // ¿should be false?
       }
       if(current->getVal()==OPENING){
         LOG1("Garage Door was opening and requested closing. Stop first\n");
         current->setVal(STOPPED);                   // Set currentState to Stopped
-        return(false);
+        return(true); // ¿should be false?
       }
       LOG1("Closing Garage Door\n");                // else the target-state value is set to 1, and HomeKit is requesting the door to be in the closed position
       current->setVal(CLOSING);                     // set the current-state value to 3, which means "closing" 
@@ -140,9 +155,15 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
   } // update
 
 
-
+  // Once you read a sensor's values in a loop() method, you need to communicate this back to HomeKit so the new values can be 
+  // reflected in the HomeKit Controller. This may be strictly for information purposes (such as a temperature sensor) 
+  // or could be used by HomeKit itself to trigger other devices (as might occur implementing a Door Sensor). 
+  
+  // In order to communicate with HomeKit to update the value os a Characteristic, we use the method called setVal(). 
+  // Do not use setVal() unless the value of the Characteristic changes, but do use it to immediately inform HomeKit of something time-sensitive, such as a door opening.
 
   void loop(){                                      // loop() method
+  
      if(obstruction->timeVal()>1000){               // check time elapsed since last update and proceed only if greater than 0,5 seconds
         // LOG1("Read sensor states \n");
         // Read the Reed Sensor (Walking Door)      // The logic of this sensor is reversed!!!
@@ -150,7 +171,7 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
         // Read The Photovoltaic Sensor
         photoSensorState = digitalRead(photoSensorPin);
 
-        if(photoSensorState == 1 || reedSensorState == 0){
+        if(photoSensorState == 1 || reedSensorState == 1){
           obstruction->setVal(true);                   // set obstruction-detected to true
           // LOG1("Turn on the WARNING LED \n");
           // digitalWrite(warnPin,HIGH);                   // turn pin on   
@@ -184,7 +205,7 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
     if(current->getVal()!=target->getVal() && target->timeVal()>OPERATIONTIME){ 
       // Además de establecer un tiempo de cierre por seguridad, habría que leer el Sensor Portón para confirmar el cierre de la puerta. 
       // Si el tiempo desde la activación hasta recibir la señal de cierre excede X sg, avisar que puerta bloqueada o parada (o stopped) 
-      // TEST: meter aqui el test del principio del loop, pues en principio solo saltará Obstruction, si hay orden de movimiento de la puerta.
+      
       LOG1("Door Inactive \n");
       current->setVal(target->getVal());           // set the current-state to the target-state
       if (target->getVal()==0){
