@@ -30,8 +30,8 @@
 
     // En definitiva. Estando en STOP no hay que hacer caso a la señal de trigger, y hay que dejarla como estaba. (pensar con la lógica de la puerta)
 
-    // Idea: Se pueden hacer dos funciones: funcion mandarPulso y funcion mandarDoblePulso.
-    // TEST: usar SpanButton() para añadir un pulsador para abrir la puerta peatonal. ¿También para abrir puerta peatonal Garaje?
+
+    
 
 struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
 
@@ -160,31 +160,36 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
 
 
   // Once you read a sensor's values in a loop() method, you need to communicate this back to HomeKit so the new values can be 
-  // reflected in the HomeKit Controller. This may be strictly for information purposes (such as a temperature sensor) 
-  // or could be used by HomeKit itself to trigger other devices (as might occur implementing a Door Sensor). 
+  // reflected in the HomeKit Controller. This may be strictly for information purposes or could be used by HomeKit itself 
+  // to trigger other devices (as might occur implementing a Door Sensor). 
   
-  // In order to communicate with HomeKit to update the value os a Characteristic, we use the method called setVal(). 
-  // Do not use setVal() unless the value of the Characteristic changes, but do use it to immediately inform HomeKit of something time-sensitive, such as a door opening.
+  // In order to communicate with HomeKit to update the value of a Characteristic, we use the method called setVal(). 
+  // Do not use setVal() unless the value of the Characteristic changes,
+  // but do use it to immediately inform HomeKit of something time-sensitive, such as a door opening.
 
   void loop(){                                      // loop() method
-  
-     if(obstruction->timeVal()>1000){               // check time elapsed since last update and proceed only if greater than 0,5 seconds
+    // In order to reduce the amount of times we setVal, two strategies are going to be used:
+    // 1- Check for an obstruction only if the door is moving => the hall effect sensor  is OPEN
+    // 2- set a delay between obtruction measures
+     // Read the Hall Sensor (Door Limits)
+    hallSensorState = digitalRead(hallSensorPin);
+    if(hallSensorState == OPEN && obstruction->timeVal()>1000){               // check time elapsed since last update and proceed only if greater than 0,5 seconds
         // LOG1("Read sensor states \n");
         // Read the Reed Sensor (Walking Door)      // The logic of this sensor is reversed!!!
         reedSensorState = digitalRead(reedSensorPin);
         // Read The Photovoltaic Sensor
         photoSensorState = digitalRead(photoSensorPin);
 
-        if(photoSensorState == 1 || reedSensorState == 1){
+        if(photoSensorState == CLOSED || reedSensorState == OPEN){
           obstruction->setVal(true);                   // set obstruction-detected to true
           // LOG1("Turn on the WARNING LED \n");
           // digitalWrite(warnPin,HIGH);                   // turn pin on   
-        } else {
+      } else {
           obstruction->setVal(false);                  // set obstruction-detected to false
           // LOG1("Turn off the WARNING LED \n");
           // digitalWrite(warnPin,LOW);                   // turn pin off   
-        }
-     }
+      }
+    }
     
     if(current->getVal()==target->getVal()){
       return;                                       // if current-state matches target-state there is nothing do -- exit loop()
@@ -207,7 +212,7 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
     // If there is an obstruction, the door is "stopped" and won't start again until the HomeKit Controller requests a new open or close action
 
     if(current->getVal()!=target->getVal() && target->timeVal()>OPERATIONTIME){ 
-      // Además de establecer un tiempo de cierre por seguridad, habría que leer el Sensor Portón para confirmar el cierre de la puerta. 
+      // Además de establecer un tiempo de cierre por seguridad, habría que leer el Sensor Hall para confirmar el cierre de la puerta. 
       // Si el tiempo desde la activación hasta recibir la señal de cierre excede X sg, avisar que puerta bloqueada o parada (o stopped) 
       
       LOG1("Door Inactive \n");

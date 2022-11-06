@@ -33,18 +33,20 @@
 #include "DEV_ToggleSwitch.h"
 
 // For manually setting up HomeSpan config
-int statusPin = 19;    
+  
 int controlPin = 32;
+int statusPin = 19;  
 
-// Controlers I/O
-int activateDoorPin = 12;
+// Sensors Inputs
 int photoSensorPin = 21;
 int reedSensorPin = 23;
 int hallSensorPin = 0;
-int warnPin = 33;    
+ 
+// Controlers Outputs
+int activateDoorPin = 12;
 int lockPin = 14; 
 int intercomOpener = 27;
-
+int warnPin = 33;  
 
 
 void setup() {
@@ -58,11 +60,11 @@ void setup() {
   Serial.begin(115200);
   
 
-  homeSpan.begin(Category::Bridges,"HomeSpan Bridge", "SakuraGarage");  
+  homeSpan.begin(Category::Bridges,"Sakura HomeSpan", "SakuraGarage");  
 
     Serial.print("Configuring The Bridge \n");                               
     new SpanAccessory();
-     new DEV_Identify("Portero","SakuraHouse","20201019","SakuraBridge by HomeSpan","2244.6.1",0); // This calls the function in the DEV_Identify.h file that allows the Accessory identification in HomeKit
+     new DEV_Identify("Portero","SakuraHouse","20201019","SakuraBridge by HomeSpan","2244.7.1",0); // This calls the function in the DEV_Identify.h file that allows the Accessory identification in HomeKit
      // *NOTE* This is the inizialization of the Bridge         
 
      Serial.print("Configuring Garage Door Service \n");           // initialization message of the Service
