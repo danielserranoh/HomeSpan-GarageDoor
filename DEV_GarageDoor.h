@@ -180,7 +180,7 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
         // Read The Photovoltaic Sensor
         photoSensorState = digitalRead(photoSensorPin);
 
-        if(photoSensorState == CLOSED || reedSensorState == OPEN){
+        if(photoSensorState == CLOSED || reedSensorState == 1){
           obstruction->setVal(true);                   // set obstruction-detected to true
           // LOG1("Turn on the WARNING LED \n");
           // digitalWrite(warnPin,HIGH);                   // turn pin on   

@@ -43,13 +43,21 @@ int reedSensorPin = 23;
 int hallSensorPin = 0;
  
 // Controlers Outputs
-int activateDoorPin = 12;
-int lockPin = 14; 
+int lockPin = 12; 
+int activateDoorPin = 14;
 int intercomOpener = 27;
 int warnPin = 33;  
 
 
 void setup() {
+
+
+  // FIRST: set all Outputs to LOW to make sure there are no unexpected behaviour on rearming
+
+   digitalWrite(activateDoorPin,LOW);
+   digitalWrite(lockPin,LOW);
+   digitalWrite(intercomOpener,LOW);
+
 
    homeSpan.setControlPin(controlPin);
    homeSpan.setStatusPin(statusPin);
@@ -64,28 +72,28 @@ void setup() {
 
     Serial.print("Configuring The Bridge \n");                               
     new SpanAccessory();
-     new DEV_Identify("Portero","SakuraHouse","20201019","SakuraBridge by HomeSpan","2244.7.1",0); // This calls the function in the DEV_Identify.h file that allows the Accessory identification in HomeKit
+     new DEV_Identify("Portero","SakuraHouse","20201019","SakuraBridge by HomeSpan","2244.7.3",0); // This calls the function in the DEV_Identify.h file that allows the Accessory identification in HomeKit
      // *NOTE* This is the inizialization of the Bridge         
 
      Serial.print("Configuring Garage Door Service \n");           // initialization message of the Service
      new SpanAccessory();       //new Service::GarageDoorOpener();
-      new DEV_Identify("Puerta Garaje","BFT","BT-A-400","Demos Merkal","2244.6.2",0); // This calls the function in the DEV_Identify.h file that allows the Accessory identification in HomeKit
+      new DEV_Identify("Portón Garaje","BFT","BT-A-400","Demos Merkal","2244.6.2",0); // This calls the function in the DEV_Identify.h file that allows the Accessory identification in HomeKit
       new DEV_GarageDoor(activateDoorPin, photoSensorPin, hallSensorPin, reedSensorPin, warnPin);    
       //new SpanButton(intercomOpener);    
 
     Serial.print("Configuring Contact Sensor \n");           // initialization message of the Service
     new SpanAccessory();        //  new Service::ContactSensor();
-     new DEV_Identify("Fotovoltaico Portón","BFT","123-ABC","Photovoltaic Sensor","1.0",0);
+     new DEV_Identify("Fotocélula Portón","BFT","123-ABC","Photovoltaic Sensor","1.0",0);
      new DEV_ContactSensor(photoSensorPin, 1);      
     
     Serial.print("Configuring Contact Sensor \n");           // initialization message of the Service
     new SpanAccessory();        //  new Service::ContactSensor();
-     new DEV_Identify("Cierre Portón","SakuraHouse","123-ABC","Hall Sensor","0.2",0);
+     new DEV_Identify("Limites Portón","SakuraHouse","123-ABC","Hall Sensor","0.2",0);
      new DEV_ContactSensor(hallSensorPin,0);    
     
     Serial.print("Configuring Contact Sensor \n");           // initialization message of the Service  
     new SpanAccessory();        //  new Service::ContactSensor();
-     new DEV_Identify("Cierre Puerta","SakuraHouse","123-ABC","Reed Sensor","0.2",0);
+     new DEV_Identify("Puerta Acceso","SakuraHouse","123-ABC","Reed Sensor","0.2",0);
      new DEV_ContactSensor(reedSensorPin,0);                             
 
      
