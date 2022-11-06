@@ -74,7 +74,7 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
     this->warnPin=warnPin;
     pinMode(warnPin, OUTPUT);
     this->photoSensorPin=photoSensorPin;
-    this->photoSensorPin=hallSensorPin;
+    this->hallSensorPin=hallSensorPin;
     this->reedSensorPin=reedSensorPin;
     
     // INITIALIZATION PROCEDURE //
@@ -172,11 +172,14 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
     // 1- Check for an obstruction only if the door is moving => the hall effect sensor  is OPEN
     // 2- set a delay between obtruction measures
      // Read the Hall Sensor (Door Limits)
-    hallSensorState = digitalRead(hallSensorPin);
-    if(hallSensorState == OPEN && obstruction->timeVal()>1000){               // check time elapsed since last update and proceed only if greater than 0,5 seconds
+    hallSensorState = digitalRead(hallSensorPin); // The logic of this sensor is reversed!!!
+    if(hallSensorState == 1 && obstruction->timeVal()>1000){               // check time elapsed since last update and proceed only if greater than 0,5 seconds
+      //LOG1("hallSensorState = ");
+      //LOG1(hallSensorState);
+      //LOG1("\n");
         // LOG1("Read sensor states \n");
-        // Read the Reed Sensor (Walking Door)      // The logic of this sensor is reversed!!!
-        reedSensorState = digitalRead(reedSensorPin);
+        // Read the Reed Sensor (Walking Door)      
+        reedSensorState = digitalRead(reedSensorPin); // The logic of this sensor is reversed!!!
         // Read The Photovoltaic Sensor
         photoSensorState = digitalRead(photoSensorPin);
 
