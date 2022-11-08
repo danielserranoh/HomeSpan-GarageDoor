@@ -67,7 +67,9 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
         
     current=new Characteristic::CurrentDoorState(1);              // initial value of 1 means closed
     target=new Characteristic::TargetDoorState(1);                // initial value of 1 means closed
-    obstruction=new Characteristic::ObstructionDetected(false);   // initial value of false means NO obstruction is detected
+    obstruction= new Characteristic::ObstructionDetected(false);   // initial value of false means NO obstruction is detected
+    //lockCurrent= new Characteristic::LockCurrentState(0);
+    //lockTarget = new Characteristic:: LockTargetState(0);
 
     this->activationPin=activationPin;                                    // store the activationPin value in the field
     pinMode(activationPin, OUTPUT);

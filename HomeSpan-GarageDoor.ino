@@ -24,6 +24,8 @@
  *  SOFTWARE.
  *  
  ********************************************************************************/
+
+ // Apple's HomeKit does not provide any native services or characteristics for measuring atmospheric pressure.
  
 #include "HomeSpan.h" 
 #include "DEV_Identify.h"  
@@ -41,6 +43,7 @@ int statusPin = 19;
 int photoSensorPin = 21;
 int reedSensorPin = 23;
 int hallSensorPin = 0;
+int hallAnalogSensorPin = 36;
  
 // Controlers Outputs
 int lockPin = 12; 
@@ -52,11 +55,20 @@ int warnPin = 33;
 void setup() {
 
 
-  // FIRST: set all Outputs to LOW to make sure there are no unexpected behaviour on rearming
-
-   digitalWrite(activateDoorPin,LOW);
-   digitalWrite(lockPin,LOW);
+  // FIRST: set all Outputs to LOW to make sure there are no unexpected behaviour on startup
+   
+   pinMode(activateDoorPin, OUTPUT);
+   digitalWrite(activateDoorPin,HIGH);
+   pinMode(lockPin, OUTPUT);
+   digitalWrite(lockPin,HIGH);
+   pinMode(intercomOpener, OUTPUT);
    digitalWrite(intercomOpener,LOW);
+   
+   pinMode(photoSensorPin,INPUT_PULLUP);
+   pinMode(reedSensorPin,INPUT_PULLUP); 
+   pinMode(hallSensorPin,INPUT_PULLUP); 
+   pinMode(hallAnalogSensorPin,INPUT);  
+
 
 
    homeSpan.setControlPin(controlPin);
@@ -115,5 +127,6 @@ void setup() {
 void loop(){
   
   homeSpan.poll();
+  
   
 } // end of loop()
