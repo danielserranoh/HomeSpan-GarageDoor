@@ -44,12 +44,14 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
   int activationPin;
 
   int photoSensorPin;
-  int hallSensorPin;
+  int closedLimitSensorPin;
+  int openLimitSensorPin;
   int reedSensorPin;
   int warnPin;
 
   int photoSensorState;
-  int hallSensorState;
+  int openLimitSensorState;
+  int closedLimitSensorState;
   int reedSensorState;
 
   int OPERATIONTIME = 20000;             // Time for a full door cycle (opening or closing) in ms
@@ -63,7 +65,7 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
   //SpanCharacteristic *lockCurrent;        // reference to the Current Lock State Characteristic (optional to Garage Door Openers)
   //SpanCharacteristic *lockTarget;         // reference to the Target Lock State Characteristic (optional to Garage Door Openers)
 
-  DEV_GarageDoor(int activationPin, int photoSensorPin, int hallSensorPin, int reedSensorPin,  int warnPin) : Service::GarageDoorOpener(){       // constructor() method
+  DEV_GarageDoor(int activationPin, int photoSensorPin, int closedLimitSensorPin, int openLimitSensorPin, int reedSensorPin,  int warnPin) : Service::GarageDoorOpener(){       // constructor() method
         
     current=new Characteristic::CurrentDoorState(1);              // initial value of 1 means closed
     target=new Characteristic::TargetDoorState(1);                // initial value of 1 means closed
@@ -76,7 +78,8 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
     this->warnPin=warnPin;
     pinMode(warnPin, OUTPUT);
     this->photoSensorPin=photoSensorPin;
-    this->hallSensorPin=hallSensorPin;
+    this->closedLimitSensorPin=closedLimitSensorPin;
+    this->openLimitSensorPin=openLimitSensorPin;
     this->reedSensorPin=reedSensorPin;
     
     // INITIALIZATION PROCEDURE //
@@ -174,10 +177,10 @@ struct DEV_GarageDoor : Service::GarageDoorOpener {     // A Garage Door Opener
     // 1- Check for an obstruction only if the door is moving => the hall effect sensor  is OPEN
     // 2- set a delay between obtruction measures
      // Read the Hall Sensor (Door Limits)
-    hallSensorState = digitalRead(hallSensorPin); // The logic of this sensor is reversed!!!
-    if(hallSensorState == 1 && obstruction->timeVal()>1000){               // check time elapsed since last update and proceed only if greater than 0,5 seconds
-      //LOG1("hallSensorState = ");
-      //LOG1(hallSensorState);
+    closedLimitSensorState = digitalRead(closedLimitSensorPin); // The logic of this sensor is reversed!!!
+    if(closedLimitSensorState == 1 && obstruction->timeVal()>1000){               // check time elapsed since last update and proceed only if greater than 0,5 seconds
+      //LOG1("closedLimitSensorState = ");
+      //LOG1(closedLimitSensorState);
       //LOG1("\n");
         // LOG1("Read sensor states \n");
         // Read the Reed Sensor (Walking Door)      
