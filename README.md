@@ -17,18 +17,22 @@ The repository has three branches:
 ## SYSTEM DESCRIPTION
 The system consists of:
 
-*2 Hall effect digital sensors. *
+*2 Hall effect digital sensors*
+
 These two sensors are set apart several cm and are activated by magnets attached to the extremes of the door rack.
 As a result one sensor can detect if the door is closed, the other sensor can detect is the door is open.
 Combining the signal of both we can infer if the door is moving (opening or closing)
 
 *1 Reed Sensor*
+
 This sensor detects the open/close state of a pedestrian door that intersects the path of the garage door. If the Reed senror is open, the garage door must stop 
 
-*1 Photovoltaic Sensor *
+**1 Photovoltaic Sensor**
+
 This sensor detects if there is an obstacle in the path of the garage door.
 
 *1 RELAY MODULE*
+
 The relay module has 3 relays controling the garage door and the pedestrian door. The signals required are:
 1. Pulse for triggering the door movement: OPEN/STOP/CLOSE cycle
 2. Switch for locking the Garage door mechanism => Avoids the opening of the door regardless of the order. This Switch is triggered by the reed sensor and a Homekit virtual switch
