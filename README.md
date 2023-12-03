@@ -13,4 +13,5 @@ The repository has three branches:
 
 
 Roadmap:
-- Make the  
+- Add magnetic sensors for the door limits
+- Physically integrate the ~24V sensor
